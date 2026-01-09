@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>K-Freelance | 글로벌 한인 재능마켓</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Pretendard Variable', 'sans-serif'] },
+          colors: { 
+            primary: '#4F46E5', 
+            primaryHover: '#4338CA', 
+            secondary: '#64748B', 
+            surface: '#F8FAFC' 
+          },
+          boxShadow: {
+            'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+            'glow': '0 0 15px rgba(79, 70, 229, 0.3)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { background-color: #F8FAFC; color: #1E293B; -webkit-tap-highlight-color: transparent; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .loader { border: 3px solid #E2E8F0; border-top: 3px solid #4F46E5; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
+    /* 모던 입력 필드 */
+    .input-field { 
+        width: 100%; border-radius: 12px; border: 1px solid transparent; background-color: #F1F5F9; 
+        padding: 14px 16px; font-size: 0.95rem; color: #0F172A; transition: all 0.2s ease-in-out; font-weight: 500;
+    }
+    .input-field:focus { 
+        background-color: #ffffff; border-color: #4F46E5; outline: none; 
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); 
+    }
+    
+    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
+    input[type="date"]::-webkit-calendar-picker-indicator { background: transparent; bottom: 0; color: transparent; cursor: pointer; height: auto; left: 0; position: absolute; right: 0; top: 0; width: auto; }
+    
+    .aspect-card { aspect-ratio: 4/3; }
+    
+    .modal-overlay { align-items: flex-start; padding-top: 3rem; }
+    
+    #toast-notification { transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease-out; }
+    .toast-hidden { transform: translate(-50%, -150%); opacity: 0; pointer-events: none; }
+    .toast-visible { transform: translate(-50%, 20px); opacity: 1; }
+  </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col font-sans">
+
+  <script>
+    // ★★★ [중요] 배포된 GAS 웹 앱 URL 입력 ★★★
+    const API_URL = "https://script.google.com/macros/s/AKfycbzFDGbEAaxXK-PVeekoZbEFEU9GdrMnxGr6LVwqu6J2v8V5NAmjrSZ58Lk4nfeSWegpCA/exec"; 
+  </script>
+
+  <div id="toast-notification" class="fixed top-0 left-1/2 z-[100] flex items-center gap-3 bg-slate-900/90 backdrop-blur-md text-white px-6 py-3.5 rounded-full shadow-2xl toast-hidden border border-slate-700/50">
+    <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+    <span id="toast-message" class="font-bold text-sm tracking-wide"></span>
+  </div>
+
+  <nav class="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-lg border-b border-slate-200/60 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center gap-2.5 cursor-pointer group" onclick="showPage('list')">
+          <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-glow transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+            <i class="fa-solid fa-briefcase text-sm"></i>
+          </div>
+          <span class="text-lg font-extrabold text-slate-800 tracking-tight group-hover:text-primary transition-colors">K-Freelance</span>
+        </div>
+        
+        <div class="flex gap-3">
+            <button onclick="shareApp()" class="hidden md:flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95">
+                <i class="fa-solid fa-share-nodes"></i> <span class="hidden lg:inline">공유하기</span>
+            </button>
+            <button onclick="openWritePage()" class="hidden md:flex items-center gap-2 bg-primary hover:bg-primaryHover text-white px-5 py-2 rounded-xl font-bold text-sm transition-all shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:scale-95">
+                <i class="fa-solid fa-pen-to-square"></i> <span>글쓰기</span>
+            </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+    
+    <div id="list-page">
+      
+      <div class="flex justify-center mb-6">
+        <div class="bg-white p-1.5 rounded-2xl shadow-sm border border-slate-100 inline-flex">
+            <button onclick="setListMode('offer')" id="tab-offer" class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all bg-slate-800 text-white shadow-md flex items-center gap-2">
+                <i class="fa-solid fa-gift"></i> 재능 찾기
+            </button>
+            <button onclick="setListMode('request')" id="tab-request" class="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-hand-holding-heart"></i> 의뢰 하기
+            </button>
+        </div>
+      </div>
+
+      <div class="mb-8 bg-gradient-to-r from-indigo-600 to-blue-500 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+        <div class="relative z-10 max-w-2xl">
+          <span class="inline-block py-1 px-3 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold mb-3 border border-white/20">
+            Global Korean Talent Market
+          </span>
+          <h1 class="text-3xl md:text-4xl font-extrabold mb-3 leading-tight">
+            해외 생활의 든든한 지원군,<br/>K-Freelance
+          </h1>
+          <p class="text-indigo-100 text-sm md:text-base font-medium leading-relaxed opacity-90">
+            "이거 누구한테 부탁하지?" 고민될 때,<br/>우리 이웃의 숨은 재능을 찾아보세요.
+          </p>
+        </div>
+        <div class="absolute -right-10 -bottom-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+        <div class="absolute top-10 right-10 w-20 h-20 bg-blue-400/20 rounded-full blur-2xl"></div>
+      </div>
+
+      <div class="bg-white rounded-3xl shadow-soft border border-slate-100 p-5 mb-8">
+        <div class="grid grid-cols-2 md:grid-cols-12 gap-4">
+          <div class="col-span-1 md:col-span-2 relative group">
+            <select id="filter-country" class="input-field appearance-none cursor-pointer bg-slate-50 hover:bg-slate-100 font-medium" onchange="filterItems()">
+              <option value="">🌏 국가 전체</option>
+            </select>
+          </div>
+          <div class="col-span-1 md:col-span-3 relative group">
+             <select id="filter-category" class="input-field appearance-none cursor-pointer bg-slate-50 hover:bg-slate-100 font-medium" onchange="filterItems()">
+              <option value="">📂 카테고리 전체</option>
+              <option value="생활/정착">생활/정착</option>
+              <option value="투어/가이드">투어/가이드</option>
+              <option value="교육/레슨">교육/레슨</option>
+              <option value="비즈니스">비즈니스</option>
+              <option value="심부름">심부름</option>
+            </select>
+          </div>
+          <div class="col-span-2 md:col-span-7 relative group">
+            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-primary transition-colors"></i>
+            <input type="text" id="filter-keyword" placeholder="검색어를 입력하세요" class="input-field pl-11 bg-slate-50 hover:bg-slate-100" onkeyup="filterItems()">
+          </div>
+        </div>
+      </div>
+
+      <div id="loading" class="flex flex-col items-center justify-center py-32">
+        <div class="loader mb-6"></div>
+        <p class="text-slate-500 font-medium animate-pulse">데이터를 불러오고 있어요...</p>
+      </div>
+
+      <div id="item-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+      
+      <div id="no-data" class="hidden flex flex-col items-center justify-center py-32 text-slate-400">
+        <div class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
+            <i class="fa-regular fa-folder-open text-4xl text-slate-300"></i>
+        </div>
+        <p class="text-xl font-bold text-slate-600 mb-2">등록된 게시물이 없습니다.</p>
+        <p class="text-sm text-slate-400">첫 번째 글을 등록하여 시작해보세요!</p>
+      </div>
+    </div>
+
+    <div id="write-page" class="hidden max-w-2xl mx-auto">
+      <div class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/80 backdrop-blur-sm sticky top-0 z-10">
+          <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+            <span class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-pencil text-sm"></i></span>
+            글 작성하기
+          </h2>
+          <button onclick="showPage('list')" class="w-9 h-9 rounded-full bg-white border border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-all hover:rotate-90">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+
+        <form id="postForm" onsubmit="handleFormSubmit(event)" class="p-8 space-y-8">
+          
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            <label class="block text-sm font-bold text-slate-700 mb-3 text-center">어떤 글을 등록하시나요?</label>
+            <div class="grid grid-cols-2 gap-3">
+              <label class="cursor-pointer">
+                <input type="radio" name="postType" value="offer" checked onchange="updateFormUI()" class="peer sr-only">
+                <div class="text-center py-3 rounded-xl border-2 border-transparent bg-white text-slate-400 font-bold transition-all peer-checked:border-primary peer-checked:text-primary peer-checked:bg-indigo-50 shadow-sm">
+                  <i class="fa-solid fa-gift mb-1 block text-lg"></i> 재능 판매
+                </div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="postType" value="request" onchange="updateFormUI()" class="peer sr-only">
+                <div class="text-center py-3 rounded-xl border-2 border-transparent bg-white text-slate-400 font-bold transition-all peer-checked:border-rose-500 peer-checked:text-rose-500 peer-checked:bg-rose-50 shadow-sm">
+                  <i class="fa-solid fa-hand-holding-heart mb-1 block text-lg"></i> 서비스 요청
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Location</h3>
+            <div class="grid grid-cols-2 gap-5">
+               <div>
+                 <label class="block text-sm font-bold text-slate-700 mb-2">국가 <span class="text-rose-500">*</span></label>
+                 <div class="relative">
+                   <select id="inputCountry" class="input-field appearance-none pr-8 truncate" required onchange="handleCountryChange()">
+                     <option value="" disabled selected>국가 선택</option>
+                   </select>
+                   <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                 </div>
+                 <input type="text" id="inputCustomCountry" class="input-field mt-3 hidden bg-white border-slate-200 focus:bg-white" placeholder="국가명 직접 입력">
+               </div>
+               <div>
+                 <label class="block text-sm font-bold text-slate-700 mb-2">도시 <span class="text-rose-500">*</span></label>
+                 <input type="text" id="inputCity" class="input-field" placeholder="예: 뉴욕" required>
+               </div>
+            </div>
+          </div>
+          
+          <div class="space-y-4">
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Category</h3>
+            <div class="grid grid-cols-2 gap-5">
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-2">대분류 <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                  <select id="inputCategoryMain" class="input-field appearance-none pr-8 truncate" required onchange="updateSubCategory()">
+                    <option value="" disabled selected>선택</option>
+                    <option value="생활/정착">생활/정착</option>
+                    <option value="투어/가이드">투어/가이드</option>
+                    <option value="교육/레슨">교육/레슨</option>
+                    <option value="비즈니스">비즈니스</option>
+                    <option value="심부름">심부름</option>
+                  </select>
+                  <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-2">소분류 <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                   <select id="inputCategorySub" class="input-field appearance-none pr-8 truncate" required>
+                    <option value="" disabled selected>대분류 먼저 선택</option>
+                  </select>
+                  <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="h-px bg-slate-100"></div>
+
+          <div class="space-y-6">
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-2">제목 <span class="text-rose-500">*</span></label>
+              <input type="text" id="inputTitle" class="input-field text-lg font-bold" placeholder="제목을 입력해주세요" required>
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-2">상세 내용 <span class="text-rose-500">*</span></label>
+              <textarea id="inputContent" class="input-field h-40 resize-none leading-relaxed" placeholder="상세 내용을 구체적으로 적어주세요." required></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div>
+                  <label id="label-price" class="block text-sm font-bold text-slate-700 mb-2">가격 <span class="text-rose-500">*</span></label>
+                  <div class="relative flex items-center">
+                      <div id="currency-prefix" class="absolute left-4 text-slate-500 font-bold">$</div>
+                      <input type="number" id="inputPrice" class="input-field pl-12 pr-16 font-bold text-slate-800" placeholder="0" required>
+                      <div class="absolute right-4 text-xs text-slate-400 font-medium bg-slate-100 px-2 py-1 rounded">/ 건,시간</div>
+                  </div>
+              </div>
+              <div id="box-experience">
+                  <label class="block text-sm font-bold text-slate-700 mb-2">관련 경력</label>
+                  <div class="relative">
+                    <select id="inputExperience" class="input-field appearance-none pr-8 truncate">
+                        <option value="경력 없음">경력 없음</option>
+                        <option value="1년 미만">1년 미만</option>
+                        <option value="1~3년">1~3년</option>
+                        <option value="3~5년">3~5년</option>
+                        <option value="5~10년">5~10년</option>
+                        <option value="10년 이상">10년 이상</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                  </div>
+              </div>
+               <div id="box-portfolio">
+                  <label class="block text-sm font-bold text-slate-700 mb-2">포트폴리오 URL</label>
+                  <input type="url" id="inputPortfolio" class="input-field text-blue-600 underline-offset-2" placeholder="https://...">
+              </div>
+            </div>
+          </div>
+
+          <div class="p-6 bg-slate-50/80 rounded-2xl border border-slate-100 space-y-5">
+              <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Contact Info</h3>
+              <div class="grid grid-cols-1 gap-4">
+                <div>
+                   <label class="block text-sm font-bold text-slate-700 mb-3">연락 수단 추가 <span class="text-rose-500">*</span></label>
+                   
+                   <div class="grid grid-cols-3 gap-2 mb-3">
+                       <label class="cursor-pointer">
+                           <input type="radio" name="contactType" value="phone" checked onchange="updateTempContactPlaceholder()" class="peer sr-only">
+                           <div class="text-center py-2.5 rounded-lg border border-slate-200 bg-white text-slate-500 text-xs font-bold transition-all peer-checked:border-indigo-500 peer-checked:text-indigo-600 peer-checked:bg-indigo-50 whitespace-nowrap">
+                               전화번호
+                           </div>
+                       </label>
+                       <label class="cursor-pointer">
+                           <input type="radio" name="contactType" value="kakao" onchange="updateTempContactPlaceholder()" class="peer sr-only">
+                           <div class="text-center py-2.5 rounded-lg border border-slate-200 bg-white text-slate-500 text-xs font-bold transition-all peer-checked:border-yellow-400 peer-checked:text-slate-800 peer-checked:bg-yellow-50 whitespace-nowrap">
+                               카톡 ID
+                           </div>
+                       </label>
+                       <label class="cursor-pointer">
+                           <input type="radio" name="contactType" value="openchat" onchange="updateTempContactPlaceholder()" class="peer sr-only">
+                           <div class="text-center py-2.5 rounded-lg border border-slate-200 bg-white text-slate-500 text-xs font-bold transition-all peer-checked:border-blue-500 peer-checked:text-blue-600 peer-checked:bg-blue-50 whitespace-nowrap">
+                               오픈채팅
+                           </div>
+                       </label>
+                   </div>
+
+                   <div class="flex flex-col gap-3">
+                     <div class="relative w-full">
+                        <div id="contact-icon-wrapper" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                            <i class="fa-solid fa-phone"></i>
+                        </div>
+                        <input type="text" id="tempContactValue" class="input-field pl-10 py-3.5 w-full" placeholder="전화번호 입력">
+                     </div>
+                     <button type="button" onclick="handleAddContact()" class="bg-slate-800 hover:bg-slate-900 text-white w-full py-3.5 rounded-xl transition-all shadow-lg flex items-center justify-center active:scale-95 font-bold">
+                         <i class="fa-solid fa-plus mr-2"></i> 추가하기
+                     </button>
+                   </div>
+
+                   <div id="added-contacts-list" class="flex flex-wrap gap-2 mt-4 min-h-[2rem]">
+                       <p id="contact-placeholder" class="text-xs text-slate-400 py-1 pl-1">연락처를 추가해주세요.</p>
+                   </div>
+                </div>
+
+                <div class="border-t border-slate-200/60 pt-4 mt-2">
+                  <label class="block text-sm font-bold text-slate-700 mb-2">게시 종료일 (자동삭제)</label>
+                  <div class="relative">
+                    <input type="date" id="inputEndDate" class="input-field text-slate-600 appearance-none pr-10" required>
+                    <i class="fa-regular fa-calendar absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                  </div>
+                </div>
+              </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-2">이미지 (최대 3장)</label>
+            <div class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center hover:bg-slate-50 hover:border-primary/50 transition-all cursor-pointer relative group bg-white">
+                <input type="file" id="inputImages" accept="image/*" multiple onchange="handleImagePreview(this)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                <div class="text-slate-400 group-hover:text-primary transition-colors flex flex-col items-center">
+                  <div class="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mb-3 group-hover:bg-indigo-50 transition-colors">
+                    <i class="fa-solid fa-camera text-2xl text-slate-300 group-hover:text-primary"></i>
+                  </div>
+                  <p class="text-sm font-bold text-slate-500 group-hover:text-primary">클릭하여 이미지 업로드</p>
+                  <p class="text-xs text-slate-400 mt-1">또는 파일을 여기로 드래그하세요</p>
+                </div>
+            </div>
+            <div id="preview-container" class="flex gap-3 mt-4 overflow-x-auto pb-2 no-scrollbar"></div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-2">비밀번호 (수정/삭제용) <span class="text-rose-500">*</span></label>
+            <div class="relative">
+                <input type="password" id="inputPassword" class="input-field bg-amber-50 border-amber-200 focus:border-amber-400 focus:ring-amber-200/50 text-center tracking-widest font-bold pl-10" placeholder="●●●●" required>
+                <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-amber-400 text-sm"></i>
+            </div>
+          </div>
+
+          <div class="flex gap-4 pt-6 pb-20 md:pb-0">
+              <button type="button" onclick="showPage('list')" class="flex-1 py-4 rounded-2xl border border-slate-200 bg-white text-slate-600 font-bold hover:bg-slate-50 hover:text-slate-800 transition-all active:scale-95">취소</button>
+              <button type="submit" id="submit-btn" class="flex-1 py-4 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-indigo-500/30 hover:bg-primaryHover hover:shadow-indigo-500/50 transition-all active:scale-95 flex items-center justify-center gap-2">
+                <span>등록 완료</span> <i class="fa-solid fa-check"></i>
+              </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <div id="detail-modal" class="fixed inset-0 z-50 hidden modal-overlay" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0 modal-bg" onclick="closeModal('detail-modal')"></div>
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full items-start justify-center p-4 pt-20 text-center sm:p-0">
+        <div class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg opacity-0 scale-95 modal-panel border border-slate-100/50">
+          
+          <button onclick="closeModal('detail-modal')" class="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/40 text-white backdrop-blur-md transition-all border border-white/20"><i class="fa-solid fa-xmark"></i></button>
+          
+          <div class="relative group bg-slate-100 aspect-video">
+             <div id="modal-images" class="w-full h-full flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth"></div>
+             
+             <button id="slider-prev" class="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-slate-800 w-9 h-9 flex items-center justify-center rounded-full shadow-lg z-10 hidden transition-all hover:scale-110 active:scale-90" onclick="scrollSlider(-1)">
+                <i class="fa-solid fa-chevron-left text-sm"></i>
+             </button>
+             <button id="slider-next" class="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-slate-800 w-9 h-9 flex items-center justify-center rounded-full shadow-lg z-10 hidden transition-all hover:scale-110 active:scale-90" onclick="scrollSlider(1)">
+                <i class="fa-solid fa-chevron-right text-sm"></i>
+             </button>
+
+             <div id="slider-dots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10 p-1.5 rounded-full bg-black/20 backdrop-blur-sm"></div>
+          </div>
+          
+          <div class="p-6 sm:p-8 relative">
+            <div class="flex justify-between items-start mb-4">
+              <div class="flex flex-wrap gap-2 text-[11px] font-bold uppercase tracking-wider">
+                <span id="detail-location" class="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full border border-indigo-100"></span>
+                <span id="detail-category" class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full border border-slate-200"></span>
+              </div>
+            </div>
+            
+            <h3 id="detail-title" class="text-2xl font-bold text-slate-900 mb-3 leading-snug"></h3>
+            <p id="detail-price" class="text-2xl font-extrabold text-primary mb-6 tracking-tight"></p>
+            
+            <div class="grid grid-cols-2 gap-3 mb-6">
+               <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center hover:bg-slate-100 transition-colors">
+                 <i class="fa-regular fa-star text-indigo-400 mb-2 text-lg"></i>
+                 <span id="detail-exp-label" class="block text-xs text-slate-400 mb-0.5">경력</span>
+                 <span id="detail-exp" class="block text-sm font-bold text-slate-700 truncate"></span>
+               </div>
+               <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center hover:bg-slate-100 transition-colors">
+                 <i class="fa-regular fa-calendar-check text-indigo-400 mb-2 text-lg"></i>
+                 <span class="block text-xs text-slate-400 mb-0.5">마감일</span>
+                 <span id="detail-enddate" class="block text-sm font-bold text-slate-700 truncate"></span>
+               </div>
+            </div>
+
+            <div class="prose prose-sm prose-slate max-w-none mb-8 bg-slate-50/50 p-5 rounded-2xl border border-slate-100">
+              <p id="detail-content" class="whitespace-pre-wrap text-slate-600 leading-relaxed"></p>
+            </div>
+            
+            <div id="detail-portfolio-container" class="mb-5"></div>
+
+            <div id="contact-buttons-container" class="space-y-3"></div>
+
+            <div class="mt-8 pt-6 border-t border-slate-100 flex justify-between items-center text-xs text-slate-400 font-medium">
+              <span id="detail-date" class="bg-slate-50 px-2 py-1 rounded"></span>
+              <button onclick="openDeleteModal()" class="hover:text-red-500 hover:bg-red-50 px-2 py-1 rounded transition-colors flex items-center gap-1"><i class="fa-regular fa-trash-can"></i> 게시글 삭제</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="password-modal" class="fixed inset-0 z-[60] hidden flex items-start justify-center p-4 pt-24">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeModal('password-modal')"></div>
+    <div class="relative bg-white rounded-3xl shadow-2xl p-8 w-full max-w-xs transform scale-100 transition-all border border-slate-100 text-center modal-panel">
+      <div class="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
+          <i class="fa-solid fa-lock text-xl"></i>
+      </div>
+      <h3 class="text-lg font-bold text-slate-900 mb-2">삭제 확인</h3>
+      <p class="text-xs text-slate-500 mb-6">등록 시 설정한 비밀번호를 입력해주세요.</p>
+      <input type="password" id="delete-password" class="input-field mb-6 text-center tracking-widest font-bold bg-slate-50 border-slate-200" placeholder="●●●●">
+      <div class="flex gap-3">
+        <button onclick="closeModal('password-modal')" class="flex-1 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-bold transition-colors">취소</button>
+        <button onclick="executeDelete()" class="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-red-200 transition-colors">삭제하기</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="floating-write-btn" class="md:hidden fixed bottom-6 right-6 flex flex-col gap-3 z-40 transition-transform duration-300">
+      <button onclick="openWritePage()" class="w-14 h-14 bg-primary text-white rounded-full shadow-xl shadow-indigo-500/30 flex items-center justify-center text-2xl transition-transform active:scale-90 hover:bg-primaryHover">
+        <i class="fa-solid fa-plus"></i>
+      </button>
+  </div>
+  <div id="floating-share-btn" class="md:hidden fixed bottom-6 left-6 z-40 transition-transform duration-300">
+      <button onclick="shareApp()" class="w-12 h-12 bg-white text-slate-600 border border-slate-200 rounded-full shadow-lg flex items-center justify-center text-xl transition-transform active:scale-90 hover:bg-slate-50">
+        <i class="fa-solid fa-share-nodes"></i>
+      </button>
+  </div>
+
+  <script>
+    const COUNTRY_DATA = {
+        "미국": { code: "+1", symbol: "$" }, "중국": { code: "+86", symbol: "¥" }, "일본": { code: "+81", symbol: "¥" }, "캐나다": { code: "+1", symbol: "C$" }, "베트남": { code: "+84", symbol: "₫" }, "호주": { code: "+61", symbol: "A$" }, "영국": { code: "+44", symbol: "£" }, "필리핀": { code: "+63", symbol: "₱" }, "독일": { code: "+49", symbol: "€" }, "뉴질랜드": { code: "+64", symbol: "NZ$" }, "프랑스": { code: "+33", symbol: "€" }, "싱가포르": { code: "+65", symbol: "S$" }, "태국": { code: "+66", symbol: "฿" }, "말레이시아": { code: "+60", symbol: "RM" }, "인도네시아": { code: "+62", symbol: "Rp" }
+    };
+
+    let allData = [];
+    let currentDetailId = null;
+    let selectedImages = [];
+    let contactList = [];
+    let currentListMode = 'offer'; 
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initCountryOptions();
+      if(API_URL.includes("...")) alert("소스코드의 API_URL 변수에 배포된 GAS URL을 입력해주세요!");
+      fetchData();
+      initDateInput();
+    });
+
+    function initDateInput() {
+      const date = new Date();
+      date.setDate(date.getDate() + 30);
+      document.getElementById('inputEndDate').valueAsDate = date;
+    }
+
+    function convertDriveLink(url) {
+      if (!url) return '';
+      if (url.includes('lh3.googleusercontent.com')) return url;
+      const match = url.match(/id=([^&]+)/) || url.match(/\/d\/([^/]+)/);
+      if (match && match[1]) {
+        return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+      }
+      return url;
+    }
+
+    function showToast(message, isSuccess = true) {
+      const toast = document.getElementById('toast-notification');
+      const icon = document.getElementById('toast-icon');
+      const msg = document.getElementById('toast-message');
+
+      msg.innerText = message;
+      
+      if(isSuccess) {
+        icon.className = "fa-solid fa-circle-check text-emerald-400 text-lg";
+      } else {
+        icon.className = "fa-solid fa-circle-exclamation text-rose-400 text-lg";
+      }
+
+      toast.classList.remove('toast-hidden');
+      toast.classList.add('toast-visible');
+
+      setTimeout(() => {
+        toast.classList.remove('toast-visible');
+        toast.classList.add('toast-hidden');
+      }, 3000);
+    }
+
+    function initCountryOptions() {
+        const selectWrite = document.getElementById('inputCountry');
+        const selectFilter = document.getElementById('filter-country');
+        
+        selectWrite.innerHTML = '<option value="" disabled selected>국가 선택</option>';
+        selectFilter.innerHTML = '<option value="">🌏 국가 전체</option>';
+
+        Object.keys(COUNTRY_DATA).sort().forEach(country => {
+            selectFilter.appendChild(new Option(country, country));
+            selectWrite.appendChild(new Option(country, country));
+        });
+
+        const directOption = document.createElement('option');
+        directOption.value = 'direct';
+        directOption.innerText = '✏️ 직접 입력';
+        selectWrite.appendChild(directOption);
+    }
+
+    function handleCountryChange() {
+        const select = document.getElementById('inputCountry');
+        const customInput = document.getElementById('inputCustomCountry');
+        const currencyPrefix = document.getElementById('currency-prefix');
+        
+        if (select.value === 'direct') {
+            customInput.classList.remove('hidden');
+            customInput.required = true;
+            currencyPrefix.innerText = '$'; 
+        } else {
+            customInput.classList.add('hidden');
+            customInput.required = false;
+            const data = COUNTRY_DATA[select.value];
+            if (data) {
+                currencyPrefix.innerText = data.symbol;
+            }
+        }
+    }
+    
+    // [수정됨] 연락처 타입(라디오) 변경 시 호출
+    function updateTempContactPlaceholder() {
+        const type = document.querySelector('input[name="contactType"]:checked').value;
+        const input = document.getElementById('tempContactValue');
+        const iconWrapper = document.getElementById('contact-icon-wrapper');
+        const countrySelect = document.getElementById('inputCountry');
+        
+        if (type === 'phone') {
+            iconWrapper.innerHTML = '<i class="fa-solid fa-phone"></i>';
+            let code = "";
+            const val = countrySelect.value;
+            if (val && val !== 'direct' && COUNTRY_DATA[val]) {
+                code = COUNTRY_DATA[val].code;
+            }
+            
+            if (input.value === "" || input.value.trim() === code || input.value.startsWith("+")) {
+                input.value = code ? code + " " : "";
+            }
+            input.placeholder = "전화번호 입력";
+        } else if (type === 'kakao') {
+            iconWrapper.innerHTML = '<i class="fa-solid fa-comment text-yellow-500"></i>';
+            input.value = "";
+            input.placeholder = "카카오톡 ID 입력";
+        } else {
+            iconWrapper.innerHTML = '<i class="fa-solid fa-arrow-up-right-from-square text-blue-500"></i>';
+            input.value = "";
+            input.placeholder = "오픈채팅 URL 입력";
+        }
+    }
+
+    // [수정됨] 연락처 추가 (라디오 값 읽기)
+    function handleAddContact() {
+        const type = document.querySelector('input[name="contactType"]:checked').value;
+        const value = document.getElementById('tempContactValue').value.trim();
+        if (!value) { showToast("연락처를 입력해주세요.", false); return; }
+        contactList.push({ type, value });
+        renderContactList();
+        document.getElementById('tempContactValue').value = '';
+        updateTempContactPlaceholder();
+    }
+
+    function removeContact(index) {
+        contactList.splice(index, 1);
+        renderContactList();
+    }
+
+    function renderContactList() {
+        const container = document.getElementById('added-contacts-list');
+        container.innerHTML = '';
+        if (contactList.length === 0) {
+            container.innerHTML = '<p id="contact-placeholder" class="text-xs text-slate-400 py-1 pl-1">연락처를 추가해주세요.</p>';
+            return;
+        }
+        contactList.forEach((item, index) => {
+            const badge = document.createElement('div');
+            badge.className = "flex items-center gap-2 bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl text-xs font-bold border border-indigo-100 shadow-sm transition-all hover:shadow";
+            let icon = '';
+            let label = item.type;
+            if(item.type === 'phone') { icon = '<i class="fa-solid fa-phone text-indigo-400"></i>'; label = '전화'; }
+            else if(item.type === 'kakao') { icon = '<i class="fa-solid fa-comment text-yellow-500"></i>'; label = '카톡'; }
+            else { icon = '<i class="fa-solid fa-arrow-up-right-from-square text-blue-500"></i>'; label = '오픈챗'; }
+
+            badge.innerHTML = `${icon}<span>${label}: ${item.value.length > 15 ? item.value.substring(0,12)+'...' : item.value}</span><button onclick="removeContact(${index})" class="ml-1 text-indigo-300 hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark"></i></button>`;
+            container.appendChild(badge);
+        });
+    }
+
+    // [수정됨] 강력한 클립보드 복사 함수 (호환성 개선)
+    async function shareApp() {
+        const shareData = { title: 'K-Freelance', text: '글로벌 한인 재능 마켓 K-Freelance를 확인해보세요!', url: window.location.href };
+        if (navigator.share) { navigator.share(shareData).catch((err) => console.log('공유 취소됨', err)); } 
+        else { copyToClipboard(window.location.href); }
+    }
+
+    function copyToClipboard(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => showToast('복사되었습니다!'))
+            .catch(() => fallbackCopy(text));
+        } else {
+            fallbackCopy(text);
+        }
+    }
+
+    function fallbackCopy(text) {
+        try {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed"; ta.style.left = "0"; ta.style.top = "0";
+            document.body.appendChild(ta); ta.focus(); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta);
+            showToast('복사되었습니다!');
+        } catch (err) {
+            showToast('복사 기능을 지원하지 않는 브라우저입니다.', false);
+        }
+    }
+
+    function showPage(pageId) {
+      const listPage = document.getElementById('list-page');
+      const writePage = document.getElementById('write-page');
+      const fabWrite = document.getElementById('floating-write-btn');
+      const fabShare = document.getElementById('floating-share-btn');
+
+      if (pageId === 'list') { 
+          writePage.classList.add('hidden'); 
+          listPage.classList.remove('hidden'); 
+          fabWrite.classList.remove('translate-y-24', 'opacity-0');
+          fabShare.classList.remove('translate-y-24', 'opacity-0');
+          window.scrollTo(0, 0); 
+      } else { 
+          listPage.classList.add('hidden'); 
+          writePage.classList.remove('hidden'); 
+          fabWrite.classList.add('translate-y-24', 'opacity-0');
+          fabShare.classList.add('translate-y-24', 'opacity-0');
+          window.scrollTo(0, 0); 
+      }
+    }
+
+    function setListMode(mode) {
+      currentListMode = mode;
+      
+      const btnOffer = document.getElementById('tab-offer');
+      const btnRequest = document.getElementById('tab-request');
+      
+      const activeClass = ['bg-slate-800', 'text-white', 'shadow-md'];
+      const inactiveClass = ['text-slate-500', 'hover:bg-slate-50'];
+
+      btnOffer.className = "px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2";
+      btnRequest.className = "px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2";
+
+      if(mode === 'offer') {
+          btnOffer.classList.add(...activeClass);
+          btnRequest.classList.add(...inactiveClass);
+      } else {
+          btnRequest.classList.add(...activeClass); 
+          btnOffer.classList.add(...inactiveClass);
+      }
+      
+      filterItems();
+    }
+
+    function updateFormUI() {
+      const type = document.querySelector('input[name="postType"]:checked').value;
+      const labelPrice = document.getElementById('label-price');
+      const boxExp = document.getElementById('box-experience');
+      const boxPort = document.getElementById('box-portfolio');
+      
+      if (type === 'request') {
+        labelPrice.innerHTML = '희망 예산 <span class="text-rose-500">*</span>';
+        boxExp.classList.add('hidden');
+        boxPort.classList.add('hidden');
+        document.getElementById('inputExperience').value = '';
+      } else {
+        labelPrice.innerHTML = '가격 <span class="text-rose-500">*</span>';
+        boxExp.classList.remove('hidden');
+        boxPort.classList.remove('hidden');
+      }
+    }
+
+    function openWritePage() {
+      document.getElementById('postForm').reset();
+      document.getElementById('preview-container').innerHTML = '';
+      selectedImages = [];
+      contactList = []; 
+      renderContactList();
+      initDateInput();
+      document.getElementById('currency-prefix').innerText = '$';
+      document.getElementById('inputCustomCountry').classList.add('hidden'); 
+      
+      const radios = document.getElementsByName('postType');
+      radios[0].checked = true; 
+      updateFormUI();
+      
+      // 연락처 초기화 (전화번호 기본 선택)
+      const contactRadios = document.getElementsByName('contactType');
+      contactRadios[0].checked = true;
+      updateTempContactPlaceholder();
+
+      showPage('write');
+    }
+
+    async function fetchData() {
+      const loading = document.getElementById('loading');
+      const grid = document.getElementById('item-grid');
+      const noData = document.getElementById('no-data');
+
+      loading.classList.remove('hidden');
+      grid.innerHTML = '';
+      noData.classList.add('hidden');
+
+      try {
+        const res = await fetch(API_URL);
+        const json = await res.json();
+        loading.classList.add('hidden');
+        if(json.status === 'success') {
+          allData = json.data;
+          renderCards(allData);
+          filterItems(); 
+        } else {
+          showToast('데이터 로드 실패: ' + json.message, false);
+        }
+      } catch (err) {
+        loading.classList.add('hidden');
+        console.error(err);
+        showToast("서버 연결 실패. URL을 확인하세요.", false);
+      }
+    }
+
+    function renderCards(data) {
+      const grid = document.getElementById('item-grid');
+      const noData = document.getElementById('no-data');
+      grid.innerHTML = '';
+
+      if (data.length === 0) { noData.classList.remove('hidden'); return; }
+      noData.classList.add('hidden');
+
+      data.forEach((item, index) => {
+        const images = item.ImageURLs ? item.ImageURLs.split(',') : [];
+        const thumb = images.length > 0 ? convertDriveLink(images[0]) : 'https://via.placeholder.com/400x300?text=No+Image';
+        const pfBadge = item.PortfolioLink ? `<span class="absolute top-3 right-3 bg-emerald-500/90 backdrop-blur text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1"><i class="fa-solid fa-check"></i> 포트폴리오</span>` : '';
+        const delay = index * 50; 
+        
+        let displayPrice = item.Price;
+        if (/^[\d,.]+$/.test(displayPrice)) {
+            const countryInfo = COUNTRY_DATA[item.Country];
+            if (countryInfo) {
+                displayPrice = `${countryInfo.symbol} ${displayPrice}`;
+            }
+        }
+
+        const card = document.createElement('div');
+        card.className = "group bg-white rounded-3xl shadow-soft hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden border border-slate-100 flex flex-col h-full";
+        card.style.animation = `fadeInUp 0.6s ease-out ${delay}ms both`;
+        card.onclick = () => openDetail(item.ID);
+        
+        card.innerHTML = `
+          <div class="aspect-card bg-slate-100 overflow-hidden relative">
+            <img src="${thumb}" onerror="this.src='https://via.placeholder.com/400x300?text=Error'" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div class="absolute top-3 left-3">
+              <span class="text-[10px] font-bold text-slate-700 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm border border-slate-100 flex items-center gap-1"><i class="fa-solid fa-location-dot text-indigo-500"></i> ${item.Country}</span>
+            </div>
+            ${pfBadge}
+          </div>
+          <div class="p-5 flex-1 flex flex-col">
+            <div class="flex justify-between items-start gap-2 mb-2.5">
+               <span class="text-[11px] font-bold text-primary bg-indigo-50 px-2.5 py-1 rounded-full">${item.CategoryMain}</span>
+               <span class="text-[11px] font-medium text-slate-400 flex items-center gap-1"><i class="fa-solid fa-city"></i> ${item.City}</span>
+            </div>
+            <h3 class="font-bold text-slate-800 text-[17px] line-clamp-1 group-hover:text-primary transition-colors mb-1.5 leading-snug">${item.Title}</h3>
+            <p class="text-sm text-slate-500 line-clamp-2 mb-4 leading-relaxed">${item.Content}</p>
+            <div class="mt-auto pt-4 border-t border-slate-50 flex justify-between items-center">
+              <span class="font-extrabold text-slate-800 text-lg">${displayPrice}</span>
+              <span class="text-[11px] font-semibold text-slate-400 bg-slate-50 px-2 py-1 rounded-lg">${item.Experience ? '경력 ' + item.Experience : '서비스 요청'}</span>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function filterItems() {
+      const country = document.getElementById('filter-country').value;
+      const category = document.getElementById('filter-category').value;
+      const keyword = document.getElementById('filter-keyword').value.toLowerCase();
+      
+      const filtered = allData.filter(item => {
+        const itemType = item.PostType || 'offer'; 
+        const mType = itemType === currentListMode;
+
+        const mCountry = country === "" || item.Country === country;
+        const mCategory = category === "" || item.CategoryMain === category;
+        const mKeyword = keyword === "" || item.Title.toLowerCase().includes(keyword) || item.Content.toLowerCase().includes(keyword);
+        
+        return mType && mCountry && mCategory && mKeyword;
+      });
+      renderCards(filtered);
+    }
+
+    function openDetail(id) {
+      const item = allData.find(d => d.ID.toString() === id.toString());
+      if (!item) return;
+      currentDetailId = item.ID;
+
+      let displayPrice = item.Price;
+      if (/^[\d,.]+$/.test(displayPrice)) {
+            const countryInfo = COUNTRY_DATA[item.Country];
+            if (countryInfo) {
+                displayPrice = `${countryInfo.symbol} ${displayPrice}`;
+            }
+      }
+
+      document.getElementById('detail-location').innerText = `${item.Country}, ${item.City}`;
+      document.getElementById('detail-category').innerText = `${item.CategoryMain} > ${item.CategorySub}`;
+      document.getElementById('detail-title').innerText = item.Title;
+      document.getElementById('detail-price').innerText = displayPrice;
+      
+      const labelExp = document.getElementById('detail-exp-label');
+      const valExp = document.getElementById('detail-exp');
+      if (item.PostType === 'request') {
+         labelExp.innerText = '구분';
+         valExp.innerText = '서비스 요청';
+      } else {
+         labelExp.innerText = '경력';
+         valExp.innerText = item.Experience || '미기재';
+      }
+      
+      let endDateStr = '날짜 미정';
+      if(item.EndDate) {
+          const d = new Date(item.EndDate);
+          if(!isNaN(d.getTime())) endDateStr = d.toLocaleDateString();
+      }
+      document.getElementById('detail-enddate').innerText = `~${endDateStr} 종료`;
+      document.getElementById('detail-content').innerText = item.Content;
+      document.getElementById('detail-date').innerText = `등록일: ${new Date(item.Timestamp).toLocaleDateString()}`;
+
+      const imgContainer = document.getElementById('modal-images');
+      imgContainer.innerHTML = '';
+      const images = item.ImageURLs ? item.ImageURLs.split(',') : [];
+      const dotsContainer = document.getElementById('slider-dots');
+      dotsContainer.innerHTML = '';
+
+      const prevBtn = document.getElementById('slider-prev');
+      const nextBtn = document.getElementById('slider-next');
+
+      if(images.length === 0) {
+        imgContainer.innerHTML = '<div class="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50"><i class="fa-regular fa-image text-4xl mb-2"></i><span class="text-xs font-bold">No Image</span></div>';
+        prevBtn.classList.add('hidden');
+        nextBtn.classList.add('hidden');
+      } else {
+        if(images.length > 1) {
+            prevBtn.classList.remove('hidden');
+            nextBtn.classList.remove('hidden');
+        } else {
+            prevBtn.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+        }
+
+        images.forEach((src, idx) => {
+          const img = document.createElement('img');
+          img.src = convertDriveLink(src);
+          img.onerror = function() { this.src='https://via.placeholder.com/600x400?text=Image+Load+Error'; };
+          img.className = "w-full h-full flex-shrink-0 object-contain snap-center bg-slate-50";
+          imgContainer.appendChild(img);
+
+          if(images.length > 1) {
+              const dot = document.createElement('div');
+              dot.className = `w-1.5 h-1.5 rounded-full ${idx===0 ? 'bg-white w-3' : 'bg-white/50'} shadow-sm transition-all duration-300`;
+              dotsContainer.appendChild(dot);
+          }
+        });
+      }
+
+      window.scrollSlider = function(direction) {
+          const w = imgContainer.clientWidth;
+          imgContainer.scrollBy({ left: direction * w, behavior: 'smooth' });
+      };
+
+      const pfContainer = document.getElementById('detail-portfolio-container');
+      pfContainer.innerHTML = ''; 
+      if(item.PortfolioLink) {
+        const pfBtn = document.createElement('a');
+        pfBtn.href = item.PortfolioLink;
+        pfBtn.target = "_blank";
+        pfBtn.className = "block w-full bg-slate-900 hover:bg-black text-white py-4 rounded-2xl font-bold text-center shadow-lg shadow-slate-200 transition-all transform active:scale-95";
+        pfBtn.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> 포트폴리오 확인하기`;
+        pfContainer.appendChild(pfBtn);
+      }
+
+      const btnContainer = document.getElementById('contact-buttons-container');
+      btnContainer.innerHTML = '';
+
+      let contacts = [];
+      try {
+          if (item.ContactType === 'multi') {
+              contacts = JSON.parse(item.ContactValue);
+          } else {
+              contacts.push({ type: item.ContactType, value: item.ContactValue });
+          }
+      } catch (e) {
+          contacts.push({ type: 'phone', value: item.ContactValue });
+      }
+
+      contacts.forEach(contact => {
+          const btn = document.createElement('button');
+          btn.className = "w-full py-4 rounded-2xl font-bold shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95";
+          
+          if (contact.type === 'kakao') {
+              btn.classList.add("bg-[#FEE500]", "hover:bg-[#FDD835]", "text-slate-900", "shadow-yellow-200");
+              btn.innerHTML = `<i class="fa-solid fa-comment"></i> 카카오톡 ID 복사 <span class="font-normal text-xs ml-1 opacity-70">(${contact.value})</span>`;
+              btn.onclick = () => copyToClipboard(contact.value);
+          } else if (contact.type === 'openchat') {
+              btn.classList.add("bg-indigo-600", "hover:bg-indigo-700", "text-white", "shadow-indigo-200");
+              btn.innerHTML = `<i class="fa-solid fa-comments"></i> 오픈채팅 입장`;
+              btn.onclick = () => window.open(contact.value, '_blank');
+          } else { 
+              btn.classList.add("bg-emerald-500", "hover:bg-emerald-600", "text-white", "shadow-emerald-200");
+              btn.innerHTML = `<i class="fa-solid fa-phone"></i> 전화 걸기 <span class="font-normal text-xs ml-1 opacity-70">(${contact.value})</span>`;
+              btn.onclick = () => location.href = `tel:${contact.value}`;
+          }
+          btnContainer.appendChild(btn);
+      });
+
+      const modal = document.getElementById('detail-modal');
+      const bg = modal.querySelector('.modal-bg');
+      const panel = modal.querySelector('.modal-panel');
+      
+      modal.classList.remove('hidden');
+      
+      // 플로팅 버튼 숨김
+      document.getElementById('floating-write-btn').classList.add('translate-y-24', 'opacity-0');
+      document.getElementById('floating-share-btn').classList.add('translate-y-24', 'opacity-0');
+
+      setTimeout(() => { 
+          bg.classList.remove('opacity-0'); 
+          panel.classList.remove('opacity-0', 'scale-95'); 
+          panel.classList.add('opacity-100', 'scale-100');
+      }, 10);
+    }
+
+    function closeModal(id) {
+      const modal = document.getElementById(id);
+      if(id === 'detail-modal' || id === 'password-modal') {
+        const bg = modal.querySelector('.modal-bg') || modal.querySelector('.absolute');
+        const panel = modal.querySelector('.modal-panel') || modal.querySelector('.relative');
+        if(bg) bg.classList.add('opacity-0'); 
+        if(panel) {
+            panel.classList.remove('opacity-100', 'scale-100');
+            panel.classList.add('opacity-0', 'scale-95');
+        }
+        setTimeout(() => modal.classList.add('hidden'), 200);
+      } else {
+        modal.classList.add('hidden');
+      }
+
+      const listPage = document.getElementById('list-page');
+      if(!listPage.classList.contains('hidden')) {
+          document.getElementById('floating-write-btn').classList.remove('translate-y-24', 'opacity-0');
+          document.getElementById('floating-share-btn').classList.remove('translate-y-24', 'opacity-0');
+      }
+    }
+
+    function openDeleteModal() { document.getElementById('delete-password').value = ''; document.getElementById('password-modal').classList.remove('hidden'); }
+
+    async function executeDelete() {
+      const pwd = document.getElementById('delete-password').value;
+      if(!pwd) { showToast('비밀번호를 입력하세요', false); return; }
+      const btn = document.querySelector('#password-modal button.bg-red-500');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
+      try {
+        const payload = { action: 'delete', id: currentDetailId, password: btoa(pwd) };
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const json = await res.json();
+        btn.innerHTML = originalText; btn.disabled = false;
+        if(json.success) { showToast("삭제되었습니다."); closeModal('password-modal'); closeModal('detail-modal'); fetchData(); } 
+        else { showToast("삭제 실패: " + json.message, false); }
+      } catch (err) { showToast("통신 오류: " + err, false); btn.innerHTML = originalText; btn.disabled = false; }
+    }
+
+    function handleImagePreview(input) {
+      const container = document.getElementById('preview-container');
+      container.innerHTML = '';
+      selectedImages = [];
+      if (input.files.length > 3) { showToast('최대 3장까지만 업로드 가능합니다.', false); input.value = ''; return; }
+      Array.from(input.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const maxW = 800;
+            const scale = maxW < img.width ? maxW / img.width : 1;
+            canvas.width = img.width * scale; canvas.height = img.height * scale;
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+            selectedImages.push({ fileName: file.name, mimeType: 'image/jpeg', data: dataUrl.split(',')[1] });
+            const thumb = document.createElement('div');
+            thumb.className = "relative w-20 h-20 flex-shrink-0 rounded-2xl overflow-hidden border border-slate-200 shadow-sm group";
+            thumb.innerHTML = `<img src="${dataUrl}" class="w-full h-full object-cover">`;
+            container.appendChild(thumb);
+          }
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      if (contactList.length === 0) { showToast("최소 한 개의 연락처를 추가해주세요.", false); return; }
+      const btn = document.getElementById('submit-btn');
+      const originalText = btn.innerHTML;
+      btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin animate-spin"></i> <span class="ml-2">등록 중...</span>';
+
+      const pwd = document.getElementById('inputPassword').value;
+      const rawPrice = document.getElementById('inputPrice').value;
+      const currency = document.getElementById('currency-prefix').innerText;
+      const formattedPrice = `${currency} ${Number(rawPrice).toLocaleString()}`;
+      
+      const endDateVal = document.getElementById('inputEndDate').value;
+
+      let countryVal = document.getElementById('inputCountry').value;
+      if (countryVal === 'direct') {
+          countryVal = document.getElementById('inputCustomCountry').value.trim();
+          if (!countryVal) {
+              showToast("국가명을 입력해주세요.", false);
+              btn.disabled = false; btn.innerHTML = originalText;
+              return;
+          }
+      }
+
+      const postType = document.querySelector('input[name="postType"]:checked').value;
+
+      const formObj = {
+        country: countryVal,
+        city: document.getElementById('inputCity').value,
+        categoryMain: document.getElementById('inputCategoryMain').value,
+        categorySub: document.getElementById('inputCategorySub').value,
+        title: document.getElementById('inputTitle').value,
+        content: document.getElementById('inputContent').value,
+        price: formattedPrice,
+        contactType: 'multi', 
+        contactValue: JSON.stringify(contactList), 
+        experience: postType === 'request' ? '' : document.getElementById('inputExperience').value,
+        portfolioLink: document.getElementById('inputPortfolio').value,
+        endDate: endDateVal, 
+        password: btoa(pwd),
+        postType: postType 
+      };
+
+      const payload = { action: 'save', data: formObj, files: selectedImages };
+
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const json = await res.json();
+        btn.disabled = false; btn.innerHTML = originalText;
+        if(json.success) { showToast('성공적으로 등록되었습니다!'); showPage('list'); fetchData(); } 
+        else { showToast('등록 실패: ' + json.message, false); }
+      } catch (err) { btn.disabled = false; btn.innerHTML = originalText; showToast('서버 통신 오류: ' + err, false); }
+    }
+
+    const subCategories = { '생활/정착': ['통번역', '이사/운송', '법률상담', '부동산', '중고거래'], '투어/가이드': ['공항픽업', '현지투어', '숙박알선', '스냅촬영'], '교육/레슨': ['어학', '악기', '입시/과외', '운동/PT'], '비즈니스': ['마케팅', '디자인', '개발', '세무회계'], '심부름': ['구매대행', '청소', '돌봄', '기타'] };
+    function updateSubCategory() { const m = document.getElementById('inputCategoryMain').value; const s = document.getElementById('inputCategorySub'); s.innerHTML='<option value="" disabled selected>선택해주세요</option>'; if(subCategories[m]) subCategories[m].forEach(sub=>s.insertAdjacentHTML('beforeend',`<option value="${sub}">${sub}</option>`)); }
+    
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = `@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }`;
+    document.head.appendChild(styleSheet);
+  </script>
+</body>
+</html>
