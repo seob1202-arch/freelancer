@@ -454,6 +454,15 @@
     </div>
   </div>
 
+  <div id="loading-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center">
+    <div class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm transition-opacity"></div>
+    <div class="relative bg-white rounded-3xl p-8 flex flex-col items-center shadow-2xl animate-in zoom-in duration-300 w-64 border border-slate-100">
+        <div class="w-12 h-12 border-4 border-indigo-100 border-t-primary rounded-full animate-spin mb-4"></div>
+        <h3 class="text-lg font-bold text-slate-800 mb-1">업로드 중...</h3>
+        <p class="text-xs text-slate-500 font-medium">잠시만 기다려주세요!</p>
+    </div>
+  </div>
+
   <div id="floating-write-btn" class="md:hidden fixed bottom-6 right-6 flex flex-col gap-3 z-40 transition-transform duration-300">
       <button onclick="openWritePage()" class="w-14 h-14 bg-primary text-white rounded-full shadow-xl shadow-indigo-500/30 flex items-center justify-center text-2xl transition-transform active:scale-90 hover:bg-primaryHover">
         <i class="fa-solid fa-plus"></i>
@@ -1046,12 +1055,16 @@
       });
     }
 
+    // [수정됨] 등록 이벤트 리스너 (로딩 모달 추가)
     async function handleFormSubmit(e) {
       e.preventDefault();
       if (contactList.length === 0) { showToast("최소 한 개의 연락처를 추가해주세요.", false); return; }
       const btn = document.getElementById('submit-btn');
       const originalText = btn.innerHTML;
-      btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin animate-spin"></i> <span class="ml-2">등록 중...</span>';
+      btn.disabled = true; 
+      
+      // 로딩 모달 열기
+      openModal('loading-modal');
 
       const pwd = document.getElementById('inputPassword').value;
       const rawPrice = document.getElementById('inputPrice').value;
@@ -1065,7 +1078,8 @@
           countryVal = document.getElementById('inputCustomCountry').value.trim();
           if (!countryVal) {
               showToast("국가명을 입력해주세요.", false);
-              btn.disabled = false; btn.innerHTML = originalText;
+              btn.disabled = false;
+              closeModal('loading-modal'); // 모달 닫기
               return;
           }
       }
@@ -1094,20 +1108,29 @@
       try {
         const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
         const json = await res.json();
+        
+        // 로딩 모달 닫기
+        closeModal('loading-modal');
         btn.disabled = false; btn.innerHTML = originalText;
+
         if(json.success) { showToast('성공적으로 등록되었습니다!'); showPage('list'); fetchData(); } 
         else { showToast('등록 실패: ' + json.message, false); }
-      } catch (err) { btn.disabled = false; btn.innerHTML = originalText; showToast('서버 통신 오류: ' + err, false); }
+      } catch (err) { 
+        closeModal('loading-modal'); // 에러 시에도 모달 닫기
+        btn.disabled = false; btn.innerHTML = originalText; showToast('서버 통신 오류: ' + err, false); 
+      }
     }
 
     const subCategories = { '생활/정착': ['통번역', '이사/운송', '법률상담', '부동산', '중고거래'], '투어/가이드': ['공항픽업', '현지투어', '숙박알선', '스냅촬영'], '교육/레슨': ['어학', '악기', '입시/과외', '운동/PT'], '비즈니스': ['마케팅', '디자인', '개발', '세무회계'], '심부름': ['구매대행', '청소', '돌봄', '기타'] };
     function updateSubCategory() { const m = document.getElementById('inputCategoryMain').value; const s = document.getElementById('inputCategorySub'); s.innerHTML='<option value="" disabled selected>선택해주세요</option>'; if(subCategories[m]) subCategories[m].forEach(sub=>s.insertAdjacentHTML('beforeend',`<option value="${sub}">${sub}</option>`)); }
     
+    // 모달 관련 함수 재사용
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    // closeModal 함수는 이미 존재함
+
     const styleSheet = document.createElement("style");
     styleSheet.innerText = `@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }`;
     document.head.appendChild(styleSheet);
   </script>
 </body>
-
 </html>
-
